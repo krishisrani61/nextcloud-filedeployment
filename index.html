@@ -38,7 +38,7 @@
           throw new Error("Missing poll endpoint or token in server response.");
         }
 
-        const pollEndpoint = data.poll.poll;
+        const pollEndpoint = data.poll.endpoint;
         const token = data.poll.token;
         const login = data.login;
 
