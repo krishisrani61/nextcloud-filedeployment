@@ -34,7 +34,8 @@
         const data = await response.json();
         console.log("Login flow response:", data);
 
-        if (!data.poll || !data.poll.poll || !data.poll.token) {
+        // ✅ Corrected key names
+        if (!data.poll || !data.poll.endpoint || !data.poll.token) {
           throw new Error("Missing poll endpoint or token in server response.");
         }
 
