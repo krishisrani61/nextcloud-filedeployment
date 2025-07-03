@@ -25,20 +25,6 @@
       text-align: center;
     }
 
-    button {
-      background: #0070f3;
-      color: white;
-      border: none;
-      padding: 10px 20px;
-      font-size: 1rem;
-      border-radius: 5px;
-      cursor: pointer;
-    }
-
-    button:hover {
-      background: #005ac1;
-    }
-
     #status {
       margin-top: 1rem;
       font-size: 0.95rem;
@@ -47,15 +33,16 @@
 </head>
 <body>
   <div class="card">
-    <h2>Authenticate with Nextcloud</h2>
-    <button onclick="startAuth()">Start Login</button>
-    <div id="status"></div>
+    <h2>Authenticating with Nextcloud...</h2>
+    <div id="status">Initializing login flow...</div>
   </div>
 
   <script>
+    window.addEventListener('DOMContentLoaded', () => startAuth());
+
     async function startAuth() {
       const statusEl = document.getElementById('status');
-      statusEl.textContent = 'Starting login flow...';
+      statusEl.textContent = 'Contacting server...';
 
       try {
         const server = "https://cloud.kisrani.com";
@@ -79,7 +66,8 @@
         // Automatically open login window
         window.open(login, "_blank");
 
-        // Begin polling
+        statusEl.textContent = "Waiting for you to complete login...";
+
         let done = false;
 
         while (!done) {
@@ -102,11 +90,10 @@
             const appPassword = loginData.appPassword;
             const webdav = `${server}/remote.php/dav/files/${username}/`;
 
-            // ✅ Redirect to local endpoint
-            const redirectUrl = `http://127.0.0.1:51123/?server=${encodeURIComponent(webdav)}&username=${encodeURIComponent(username)}&password=${encodeURIComponent(appPassword)}`;
+            const redirectUrl = `http://127.0.0.1:52123/?server=${encodeURIComponent(webdav)}&username=${encodeURIComponent(username)}&password=${encodeURIComponent(appPassword)}`;
+            statusEl.textContent = "Authenticated. Redirecting...";
             window.location.href = redirectUrl;
 
-            statusEl.textContent = "Redirecting...";
             done = true;
           } else if (pollResp.status !== 404) {
             throw new Error("Unexpected server response during polling.");
