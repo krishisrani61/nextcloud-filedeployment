@@ -26,8 +26,11 @@
         const response = await fetch("https://nextcloud-auth-proxy.ikrish61.workers.dev", {
           method: 'POST'
         });
+        const text = await response.text();
+        console.log("Raw response:", text);
+        const data = JSON.parse(text);
+    
 
-        const data = await response.json();
         console.log("Login flow response:", data);
         const pollEndpoint = data.poll.poll;
         const token = data.poll.token;
