@@ -6,7 +6,7 @@
 <body>
   <h1>Nextcloud Login</h1>
   <label for="server">Server URL:</label>
-  <input type="text" id="server" placeholder="https://cloud.example.com" />
+  <input type="text" id="server" placeholder="https://cloud.kisrani.com" />
   <button onclick="startAuth()">Start Login Flow</button>
 
   <div id="status"></div>
@@ -15,34 +15,40 @@
   <script>
     async function startAuth() {
       const server = document.getElementById('server').value.trim();
-      if (!server) return alert('Please enter a server URL');
+      if (!server) {
+        alert('Please enter a server URL');
+        return;
+      }
 
       const statusEl = document.getElementById('status');
       const resultEl = document.getElementById('result');
-      resultEl.textContent = '';
       statusEl.textContent = 'Starting login flow...';
+      resultEl.textContent = '';
 
       try {
-        const response = await fetch("https://nextcloud-auth-proxy.ikrish61.workers.dev", {
+        const encodedUrl = encodeURIComponent(server + "/index.php/login/v2");
+        const response = await fetch(`https://nextcloud-auth-proxy.ikrish61.workers.dev?url=${encodedUrl}`, {
           method: 'POST'
         });
-        const text = await response.text();
-        console.log("Raw response:", text);
-        const data = JSON.parse(text);
-    
 
+        const data = await response.json();
         console.log("Login flow response:", data);
+
+        if (!data.poll || !data.poll.poll || !data.poll.token) {
+          throw new Error("Missing poll endpoint or token in server response.");
+        }
+
         const pollEndpoint = data.poll.poll;
         const token = data.poll.token;
         const login = data.login;
-        const serverProof = data.server;
 
         statusEl.innerHTML = `Please authenticate at: <a href="${login}" target="_blank">${login}</a>`;
 
-        // Poll for token confirmation
         let done = false;
+
         while (!done) {
           await new Promise(r => setTimeout(r, 1000));
+
           const pollResp = await fetch(pollEndpoint, {
             method: 'POST',
             headers: {
@@ -53,15 +59,17 @@
 
           if (pollResp.status === 200) {
             const loginData = await pollResp.json();
-            done = true;
+            console.log("Auth success:", loginData);
             resultEl.textContent = JSON.stringify(loginData, null, 2);
             statusEl.textContent = 'Login successful!';
+            done = true;
           } else if (pollResp.status !== 404) {
-            throw new Error('Unexpected response from server');
+            throw new Error('Unexpected server response during polling.');
           }
         }
 
       } catch (e) {
+        console.error("Login flow error:", e);
         statusEl.textContent = 'Login failed: ' + e.message;
       }
     }
