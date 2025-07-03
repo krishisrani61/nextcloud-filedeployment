@@ -23,7 +23,7 @@
       statusEl.textContent = 'Starting login flow...';
 
       try {
-        const response = await fetch(`${server}/index.php/login/v2`, {
+        const response = await fetch("nextcloud-auth-proxy.ikrish61.workers.dev", {
           method: 'POST'
         });
 
