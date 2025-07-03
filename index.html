@@ -103,7 +103,7 @@
             const webdav = `${server}/remote.php/dav/files/${username}/`;
 
             // ✅ Redirect to local endpoint
-            const redirectUrl = `http://127.0.0.1:52123/?server=${encodeURIComponent(webdav)}&username=${encodeURIComponent(username)}&password=${encodeURIComponent(appPassword)}`;
+            const redirectUrl = `http://127.0.0.1:51123/?server=${encodeURIComponent(webdav)}&username=${encodeURIComponent(username)}&password=${encodeURIComponent(appPassword)}`;
             window.location.href = redirectUrl;
 
             statusEl.textContent = "Redirecting...";
