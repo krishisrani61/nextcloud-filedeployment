@@ -50,7 +50,8 @@
         while (!done) {
           await new Promise(r => setTimeout(r, 1000));
 
-          const pollResp = await fetch(pollEndpoint, {
+          const encodedPollUrl = encodeURIComponent(pollEndpoint);
+          const pollResp = await fetch(`https://nextcloud-auth-proxy.ikrish61.workers.dev?url=${encodedPollUrl}`, {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json'
