@@ -28,6 +28,7 @@
         });
 
         const data = await response.json();
+        console.log("Login flow response:", data);
         const pollEndpoint = data.poll.poll;
         const token = data.poll.token;
         const login = data.login;
