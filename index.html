@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Nextcloud Auth</title>
+</head>
+<body>
+  <h1>Nextcloud Login</h1>
+  <label for="server">Server URL:</label>
+  <input type="text" id="server" placeholder="https://cloud.example.com" />
+  <button onclick="startAuth()">Start Login Flow</button>
+
+  <div id="status"></div>
+  <pre id="result"></pre>
+
+  <script>
+    async function startAuth() {
+      const server = document.getElementById('server').value.trim();
+      if (!server) return alert('Please enter a server URL');
+
+      const statusEl = document.getElementById('status');
+      const resultEl = document.getElementById('result');
+      resultEl.textContent = '';
+      statusEl.textContent = 'Starting login flow...';
+
+      try {
+        const response = await fetch(`${server}/index.php/login/v2`, {
+          method: 'POST'
+        });
+
+        const data = await response.json();
+        const pollEndpoint = data.poll.poll;
+        const token = data.poll.token;
+        const login = data.login;
+        const serverProof = data.server;
+
+        statusEl.innerHTML = `Please authenticate at: <a href="${login}" target="_blank">${login}</a>`;
+
+        // Poll for token confirmation
+        let done = false;
+        while (!done) {
+          await new Promise(r => setTimeout(r, 1000));
+          const pollResp = await fetch(pollEndpoint, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ token })
+          });
+
+          if (pollResp.status === 200) {
+            const loginData = await pollResp.json();
+            done = true;
+            resultEl.textContent = JSON.stringify(loginData, null, 2);
+            statusEl.textContent = 'Login successful!';
+          } else if (pollResp.status !== 404) {
+            throw new Error('Unexpected response from server');
+          }
+        }
+
+      } catch (e) {
+        statusEl.textContent = 'Login failed: ' + e.message;
+      }
+    }
+  </script>
+</body>
+</html>
